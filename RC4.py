@@ -1,6 +1,7 @@
 from math import ceil
 from random import randint, getrandbits
 from sys import stdout
+import struct
 
 
 class RC4:
@@ -24,30 +25,32 @@ class RC4:
 		self.s[self.i], self.s[self.j] = self.s[self.j], self.s[self.i]
 		return self.s[(self.s[self.i]+self.s[self.j]) % self.n]
 
-	def mdrop(self, d, number):
-		result = []
-		i = 0
-		multiplier = 256//self.n
+	def mdrop(self, d):
 		val = 1
-		# if multiplier == 16:
-		# 	val = 2
-		# elif multiplier == 4:
-		# 	val = 3
-		while len(result) < val*number:
-			if i < d+1:
-				stdout.buffer.write(bytes(self.prga()))
-				i += 1
-			elif i < 2*d+1:
-				self.prga()
-				i += 1
-			else:
-				i = 0
-		# if val == 2:
-		# 	temp = []
-		# 	for i in range(number):
-		# 		temp.append(result[2*i]*16+result[2*i+1])
-		# 	result = temp
-		# return result
+		if self.n == 16:
+			val = 2
+		elif self.n == 64:
+			val = 3
+		while True:
+			if val==1:
+				for i in range(d):
+					self.prga()
+				stdout.buffer.write(struct.pack('>I', self.prga()))
+			elif val==2:
+				for i in range(2*d):
+					self.prga()
+				out = self.prga()<<4 +self.prga()
+				stdout.buffer.write(struct.pack('>I', out))
+			elif val==3:
+				result = 0
+				for i in range(4*(d+1)):
+					result=result<<6
+					result+=self.prga()
+				result = list(result.to_bytes(3*(d+1), byteorder='big'))
+				for i in range(3*(d+1)):
+					if i%(d+1)==d:
+						stdout.buffer.write(struct.pack('>I',result[i]))
+
 
 	def ksa(self, t):
 		k = [randint(0, 256) for i in range(self.length)]
