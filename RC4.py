@@ -1,11 +1,9 @@
-from math import ceil
+from math import ceil, log, floor
 from random import randint, getrandbits
 from sys import stdout
-import struct
 
 
 class RC4:
-
 	def __init__(self, l, n, mode='', t=16):
 		self.length = l
 		self.s = []
@@ -13,7 +11,7 @@ class RC4:
 		if mode == '':
 			self.ksa(t)
 		elif mode == 'rs':
-			self.ksa_rs(t)
+			self.ksa_rs(floor(2*t*log(t)))
 		elif mode == 'sst':
 			self.ksa_sst()
 
@@ -38,17 +36,20 @@ class RC4:
 			elif val==2:
 				for k in range(2*d):
 					self.prga(i,j)
-				out = (self.prga(i,j)<<4)+self.prga(i,j)
+				out = (self.prga(i,j)*16)+self.prga(i,j)
 				stdout.buffer.write(bytes([out]))
 			elif val==3:
 				result = 0
 				for k in range(4*(d+1)):
-					result=result<<6
+					result=result*64
 					result+=self.prga(i,j)
 				result = list(result.to_bytes(3*(d+1), byteorder='big'))
 				for k in range(3*(d+1)):
 					if k%(d+1)==d:
 						stdout.buffer.write(bytes([result[k]]))
+						z=z+1
+						if z==100000000:
+							break
 
 
 	def ksa(self, t):
