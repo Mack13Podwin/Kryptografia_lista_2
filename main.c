@@ -5,9 +5,9 @@
 
 #include "TestU01.h"
 
-#define N 16
-#define D 0
-#define KEY_LEN 40
+#define N 256
+#define D 3
+#define KEY_LEN 128
 
 unsigned char S[N];
 unsigned int I=0U, J=0U;
@@ -186,10 +186,20 @@ unsigned int mdrop(void){
 
 int main(){
   srand(time(0));
-  ksa_sst();
+  ksa();
   unif01_Gen* gen = unif01_CreateExternGenBits("RC4", mdrop);
   bbattery_SmallCrush(gen);
   fflush(stdout);
   unif01_DeleteExternGenBits(gen);
+  ksa_rs();
+  unif01_Gen* genrs = unif01_CreateExternGenBits("RC4rs", mdrop);
+  bbattery_SmallCrush(genrs);
+  fflush(stdout);
+  unif01_DeleteExternGenBits(genrs);
+  ksa_sst();
+  unif01_Gen* gensst = unif01_CreateExternGenBits("RC4sst", mdrop);
+  bbattery_SmallCrush(gensst);
+  fflush(stdout);
+  unif01_DeleteExternGenBits(gensst);
   return 0;
 }
